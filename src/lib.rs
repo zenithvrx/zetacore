@@ -1,71 +1,117 @@
-#[derive(Debug, PartialEq, Clone)]
-pub struct Embedding {
-    identifier: u64,
-    vector: Vec<f64>,
+use std::collections::HashMap;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Record {
+    id: String,
+    values: Vec<f32>,
+    metadata: Option<HashMap<String, String>>,
 }
 
-pub struct VectorStore {
-    embeddings: Vec<Embedding>,
-}
-
-fn dot_product(a: &[f64], b: &[f64]) -> Result<f64, &'static str> {
-    if a.len() != b.len() {
-        return Err("vectors are not equal length");
-    }
-
-    let result = (a.iter().zip(b.iter())).map(|(x, y)| x * y).sum();
-    Ok(result)
-}
-
-fn magnitude(a: &[f64]) -> f64 {
-    let s: f64 = a.iter().map(|x| x.powi(2)).sum();
-    s.sqrt()
-}
-
-fn cosine_similarity(a: &[f64], b: &[f64]) -> Result<f64, &'static str> {
-    let result = dot_product(a, b)? / (magnitude(a) * magnitude(b));
-    Ok(result)
-}
-
-impl VectorStore {
-    pub fn new(embeddings: Vec<Embedding>) -> VectorStore {
-        VectorStore { embeddings }
-    }
-
-    pub fn add(&mut self, embedding: Embedding) -> () {
-        self.embeddings.push(embedding);
-    }
-
-    pub fn remove(&mut self, identifier: u64) -> () {
-        let index = self
-            .embeddings
-            .iter()
-            .position(|x| x.identifier == identifier);
-        if let Some(i) = index {
-            self.embeddings.remove(i);
+impl Record {
+    pub fn new(id: impl Into<String>, values: Vec<f32>) -> Self {
+        Self {
+            id: id.into(),
+            values,
+            metadata: None,
         }
     }
 
-    pub fn query(
-        &self,
-        input_vector: &[f64],
-        n: usize,
-    ) -> Result<Vec<(&Embedding, f64)>, &'static str> {
-        let similarity_results: Result<Vec<f64>, &'static str> = self
-            .embeddings
+    pub fn new_with_metadata(
+        id: impl Into<String>,
+        values: Vec<f32>,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            values,
+            metadata,
+        }
+    }
+}
+
+pub struct VectorStore {
+    records: Vec<Record>,
+}
+
+impl VectorStore {
+    pub fn new(records: Vec<Record>) -> Self {
+        VectorStore { records }
+    }
+
+    pub fn add(&mut self, records: &[Record]) {
+        self.records.extend_from_slice(records);
+    }
+
+    pub fn get(&self, ids: &[&str]) -> Vec<Record> {
+        let mut result = Vec::with_capacity(ids.len());
+
+        for id in ids {
+            for record in &self.records {
+                if record.id == *id {
+                    result.push(record.clone());
+                    break;
+                }
+            }
+        }
+
+        result
+    }
+
+    pub fn delete(&mut self, ids: &[&str]) {
+        for id in ids {
+            if let Some(pos) = self.records.iter().position(|record| record.id == *id) {
+                self.records.swap_remove(pos);
+            }
+        }
+    }
+
+    pub fn query(&self, vector: &[f32], top_k: usize) -> Result<Vec<(&Record, f32)>, &'static str> {
+        const MAX_TOP_K: usize = 10_000;
+
+        if top_k > MAX_TOP_K {
+            return Err("top_k maximum value is 10,000 records");
+        }
+
+        let mut result: Vec<(&Record, f32)> = self
+            .records
             .iter()
-            .map(|x| cosine_similarity(input_vector, &x.vector))
-            .collect();
+            .map(|record| {
+                Self::cosine_similarity(vector, &record.values)
+                    .map(|similarity| (record, similarity))
+            })
+            .collect::<Result<_, _>>()?;
 
-        let mut result: Vec<(&Embedding, f64)> =
-            self.embeddings.iter().zip(similarity_results?).collect();
-        result.sort_by(
-            |a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Less), // Handle NaN
-        );
+        result.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Less));
 
-        let first_n = result[..n].to_vec();
+        Ok(result.into_iter().take(top_k).collect())
+    }
 
-        Ok(first_n)
+    fn cosine_similarity(a: &[f32], b: &[f32]) -> Result<f32, &'static str> {
+        if a.is_empty() || b.is_empty() {
+            return Err("Vectors cannot be empty");
+        }
+
+        let dot_prod = Self::dot_product(a, b)?;
+        let mag_a = Self::magnitude(a);
+        let mag_b = Self::magnitude(b);
+
+        if mag_a == 0.0 || mag_b == 0.0 {
+            return Err("Vector magnitude cannot be zero");
+        }
+
+        Ok(dot_prod / (mag_a * mag_b))
+    }
+
+    fn dot_product(a: &[f32], b: &[f32]) -> Result<f32, &'static str> {
+        if a.len() != b.len() {
+            return Err("Vectors are not equal length");
+        }
+
+        Ok(a.iter().zip(b).map(|(&x, &y)| x * y).sum())
+    }
+
+    fn magnitude(a: &[f32]) -> f32 {
+        a.iter().map(|x| x * x).sum::<f32>().sqrt()
     }
 }
 
@@ -74,69 +120,91 @@ mod tests {
     use super::*;
 
     #[test]
-    fn create_vector_store() {
-        let empty_embeddings = vec![];
-        let vector_store = VectorStore::new(empty_embeddings);
-        assert!(vector_store.embeddings.is_empty());
+    fn init_vector_store() {
+        let store = VectorStore::new(vec![]);
+        assert!(store.records.is_empty());
     }
 
     #[test]
-    fn add_embedding() {
-        let mut vector_store = VectorStore::new(vec![]);
+    fn add_to_vector_store() {
+        let mut store = VectorStore::new(vec![]);
 
-        let embedding = Embedding {
-            identifier: 1,
-            vector: vec![1.2, 3.5, 2.9],
-        };
-        vector_store.add(embedding.clone());
+        let records = vec![
+            Record::new("vec1", vec![1.2, 2.0]),
+            Record::new("vec2", vec![4.0, 9.5]),
+            Record::new("vec3", vec![9.3, 7.6]),
+            Record::new("vec4", vec![3.4, 3.1]),
+        ];
+        store.add(&records);
 
-        assert_eq!(vector_store.embeddings[0], embedding);
+        assert_eq!(store.records, records);
     }
 
     #[test]
-    fn remove_embedding() {
-        let mut vector_store = VectorStore::new(vec![]);
+    fn get_from_vector_store() {
+        let mut store = VectorStore::new(vec![]);
 
-        let embedding = Embedding {
-            identifier: 1,
-            vector: vec![1.2, 3.5, 2.9],
-        };
-        vector_store.add(embedding.clone());
-        vector_store.remove(1);
+        let records = vec![
+            Record::new("vec1", vec![1.2, 2.0]),
+            Record::new("vec2", vec![4.0, 9.5]),
+            Record::new("vec3", vec![9.3, 7.6]),
+            Record::new("vec4", vec![3.4, 3.1]),
+        ];
+        store.add(&records);
 
-        assert!(vector_store.embeddings.is_empty());
+        let result = store.get(&["vec1", "vec4"]);
+
+        assert_eq!(
+            result,
+            vec![
+                Record::new("vec1", vec![1.2, 2.0]),
+                Record::new("vec4", vec![3.4, 3.1])
+            ]
+        )
+    }
+
+    #[test]
+    fn delete_from_vector_store() {
+        let mut store = VectorStore::new(vec![]);
+
+        let records = vec![
+            Record::new("vec1", vec![1.2, 2.0]),
+            Record::new("vec2", vec![4.0, 9.5]),
+            Record::new("vec3", vec![9.3, 7.6]),
+            Record::new("vec4", vec![3.4, 3.1]),
+        ];
+        store.add(&records);
+
+        store.delete(&["vec3", "vec4"]);
+
+        assert_eq!(
+            store.records,
+            vec![
+                Record::new("vec1", vec![1.2, 2.0]),
+                Record::new("vec2", vec![4.0, 9.5]),
+            ]
+        )
     }
 
     #[test]
     fn query() {
-        let mut vector_store = VectorStore::new(vec![]);
+        let mut store = VectorStore::new(vec![]);
 
-        let embedding1 = Embedding {
-            identifier: 1,
-            vector: vec![1.2, 3.5, 2.9],
-        };
-        let embedding2 = Embedding {
-            identifier: 2,
-            vector: vec![3.2, 4.580, 9.38],
-        };
-        let embedding3 = Embedding {
-            identifier: 3,
-            vector: vec![12.3, 0.324, 8.25],
-        };
-        let embedding4 = Embedding {
-            identifier: 4,
-            vector: vec![3.56, 6.43, 4.23],
-        };
+        let records = vec![
+            Record::new("vec1", vec![1.2, 2.0]),
+            Record::new("vec2", vec![4.0, 9.5]),
+            Record::new("vec3", vec![9.3, 7.6]),
+            Record::new("vec4", vec![3.4, 3.1]),
+        ];
+        store.add(&records);
 
-        vector_store.add(embedding1.clone());
-        vector_store.add(embedding2.clone());
-        vector_store.add(embedding3.clone());
-        vector_store.add(embedding4.clone());
+        let vector = vec![1.0, 1.0];
+        let result = store.query(&vector, 3).unwrap();
+        // println!("{:#?}", result);
 
-        let query_vector = vec![1.0, 1.0, 1.0];
-
-        let result = vector_store.query(&query_vector, 3);
-
-        println!("{:#?}", result);
+        assert_eq!(result.len(), 3, "Should return top 3 results");
+        assert_eq!(result[0].0.id, "vec4", "First result should be vec4");
+        assert_eq!(result[1].0.id, "vec3", "Second result should be vec3");
+        assert_eq!(result[2].0.id, "vec1", "Third result should be vec1");
     }
 }
