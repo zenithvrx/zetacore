@@ -86,6 +86,10 @@ impl VectorStore {
         Ok(result.into_iter().take(top_k).collect())
     }
 
+    pub fn list(&self) -> Vec<&str> {
+        self.records.iter().map(|record| &*record.id).collect()
+    }
+
     fn cosine_similarity(a: &[f32], b: &[f32]) -> Result<f32, &'static str> {
         if a.is_empty() || b.is_empty() {
             return Err("Vectors cannot be empty");
@@ -187,7 +191,7 @@ mod tests {
     }
 
     #[test]
-    fn query() {
+    fn query_vector_store() {
         let mut store = VectorStore::new(vec![]);
 
         let records = vec![
@@ -206,5 +210,20 @@ mod tests {
         assert_eq!(result[0].0.id, "vec4", "First result should be vec4");
         assert_eq!(result[1].0.id, "vec3", "Second result should be vec3");
         assert_eq!(result[2].0.id, "vec1", "Third result should be vec1");
+    }
+
+    #[test]
+    fn list_vector_store_ids() {
+        let mut store = VectorStore::new(vec![]);
+
+        let records = vec![
+            Record::new("vec1", vec![1.2, 2.0]),
+            Record::new("vec2", vec![4.0, 9.5]),
+            Record::new("vec3", vec![9.3, 7.6]),
+            Record::new("vec4", vec![3.4, 3.1]),
+        ];
+        store.add(&records);
+
+        assert_eq!(store.list(), vec!["vec1", "vec2", "vec3", "vec4"])
     }
 }
