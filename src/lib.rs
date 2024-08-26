@@ -27,6 +27,10 @@ impl Record {
             metadata,
         }
     }
+
+    pub fn id(&self) -> &str {
+        &self.id
+    }
 }
 
 pub struct VectorStore {
