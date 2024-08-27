@@ -5,7 +5,7 @@ edition = "2021"
 
 [lib]
 name = "holocron"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 thiserror = "1.0"
