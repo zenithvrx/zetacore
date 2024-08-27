@@ -1,7 +1,17 @@
 [package]
 name = "holocron"
 version = "0.0.7"
+authors = ["zenithvrx"]
 edition = "2021"
+description = "A simple in-memory vector store library with Python bindings."
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["LLM", "vector-store", "similarity-search", "python-bindings"]
+categories = ["data-structures", "science"]
+exclude = [
+    "tests/*",
+    "benches/*",
+]
 
 [lib]
 name = "holocron"
