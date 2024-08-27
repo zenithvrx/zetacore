@@ -35,9 +35,9 @@ impl PyRecord {
         let dict = PyDict::new_bound(py);
 
         dict.set_item("id", self.inner.id())?;
-        dict.set_item("values", self.inner.values.to_vec())?;
+        dict.set_item("values", self.inner.values().to_vec())?;
 
-        if let Some(ref metadata) = self.inner.metadata {
+        if let Some(metadata) = self.inner.metadata() {
             dict.set_item("metadata", metadata.clone().into_py(py))?;
         }
 
@@ -58,7 +58,7 @@ impl VectorStore {
             .iter()
             .map(|item| {
                 let dict = item.downcast::<PyDict>()?;
-                Ok(PyRecord::from_pydict(dict.clone())?.inner) // PROBABLY NOT GOOD CLONE
+                Ok(PyRecord::from_pydict(dict.clone())?.inner)
             })
             .collect::<PyResult<_>>()?;
 

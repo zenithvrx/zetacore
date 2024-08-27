@@ -1,38 +1,8 @@
-use std::collections::HashMap;
+mod record;
+
+pub use record::Record;
+
 pub mod bindings;
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Record {
-    id: String,
-    values: Vec<f32>,
-    metadata: Option<HashMap<String, String>>,
-}
-
-impl Record {
-    pub fn new(id: impl Into<String>, values: Vec<f32>) -> Self {
-        Self {
-            id: id.into(),
-            values,
-            metadata: None,
-        }
-    }
-
-    pub fn new_with_metadata(
-        id: impl Into<String>,
-        values: Vec<f32>,
-        metadata: Option<HashMap<String, String>>,
-    ) -> Self {
-        Self {
-            id: id.into(),
-            values,
-            metadata,
-        }
-    }
-
-    pub fn id(&self) -> &str {
-        &self.id
-    }
-}
 
 pub struct VectorStore {
     records: Vec<Record>,
@@ -52,7 +22,7 @@ impl VectorStore {
 
         for id in ids {
             for record in &self.records {
-                if record.id == *id {
+                if record.id() == *id {
                     result.push(record.clone());
                     break;
                 }
@@ -64,7 +34,7 @@ impl VectorStore {
 
     pub fn delete(&mut self, ids: &[&str]) {
         for id in ids {
-            if let Some(pos) = self.records.iter().position(|record| record.id == *id) {
+            if let Some(pos) = self.records.iter().position(|record| record.id() == *id) {
                 self.records.swap_remove(pos);
             }
         }
@@ -81,7 +51,7 @@ impl VectorStore {
             .records
             .iter()
             .map(|record| {
-                Self::cosine_similarity(vector, &record.values)
+                Self::cosine_similarity(vector, &record.values())
                     .map(|similarity| (record, similarity))
             })
             .collect::<Result<_, _>>()?;
@@ -92,7 +62,7 @@ impl VectorStore {
     }
 
     pub fn list(&self) -> Vec<&str> {
-        self.records.iter().map(|record| &*record.id).collect()
+        self.records.iter().map(|record| &*record.id()).collect()
     }
 
     fn cosine_similarity(a: &[f32], b: &[f32]) -> Result<f32, &'static str> {
@@ -212,9 +182,9 @@ mod tests {
         // println!("{:#?}", result);
 
         assert_eq!(result.len(), 3, "Should return top 3 results");
-        assert_eq!(result[0].0.id, "vec4", "First result should be vec4");
-        assert_eq!(result[1].0.id, "vec3", "Second result should be vec3");
-        assert_eq!(result[2].0.id, "vec1", "Third result should be vec1");
+        assert_eq!(result[0].0.id(), "vec4", "First result should be vec4");
+        assert_eq!(result[1].0.id(), "vec3", "Second result should be vec3");
+        assert_eq!(result[2].0.id(), "vec1", "Third result should be vec1");
     }
 
     #[test]
