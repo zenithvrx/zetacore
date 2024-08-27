@@ -1,6 +1,6 @@
 [package]
 name = "holocron"
-version = "0.0.7"
+version = "0.1.0"
 authors = ["zenithvrx"]
 edition = "2021"
 description = "A simple in-memory vector store library with Python bindings."
