@@ -8,6 +8,7 @@ name = "holocron"
 crate-type = ["cdylib"]
 
 [dependencies]
+thiserror = "1.0"
 pyo3 = { version = "0.22", features = ["extension-module"] }
 
 [dev-dependencies]

@@ -97,7 +97,7 @@ impl VectorStore {
         Python::with_gil(|py| {
             self.inner
                 .query(&vector, top_k)
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?
                 .into_iter()
                 .map(|(r, s)| Ok((PyRecord { inner: r.clone() }.to_pydict(py)?, s)))
                 .collect()
