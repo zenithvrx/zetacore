@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+pub mod bindings;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Record {
