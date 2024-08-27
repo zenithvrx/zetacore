@@ -33,26 +33,14 @@ impl VectorStore {
     }
 
     pub fn get(&self, ids: &[&str]) -> Vec<Record> {
-        let mut result = Vec::with_capacity(ids.len());
-
-        for id in ids {
-            for record in &self.records {
-                if record.id() == *id {
-                    result.push(record.clone());
-                    break;
-                }
-            }
-        }
-
-        result
+        ids.iter()
+            .filter_map(|&id| self.records.iter().find(|r| r.id() == id))
+            .cloned()
+            .collect()
     }
 
     pub fn delete(&mut self, ids: &[&str]) {
-        for id in ids {
-            if let Some(pos) = self.records.iter().position(|record| record.id() == *id) {
-                self.records.swap_remove(pos);
-            }
-        }
+        self.records.retain(|r| !ids.contains(&r.id()))
     }
 
     pub fn query(
