@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["zenithvrx"]
 edition = "2021"
 description = "A simple in-memory vector store library with Python bindings."
+repository = "https://github.com/zenithvrx/zetacore"
 license = "Apache-2.0"
 readme = "README.md"
 keywords = ["LLM", "vector-store", "similarity-search", "python-bindings"]

@@ -19,5 +19,10 @@ readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["LLM", "vector-store", "similarity-search", "python-bindings"]
 
+[project.urls]
+Homepage = "https://github.com/zenithvrx/zetacore"
+Bug Tracker = "https://github.com/zenithvrx/zetacore/issues"
+
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
