@@ -1,7 +1,7 @@
 mod common;
 use common::create_random_record;
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
-use metacore::{Record, VectorStore};
+use zetacore::{Record, VectorStore};
 use rand::Rng;
 
 fn create_random_vector(dimension: usize) -> Vec<f32> {

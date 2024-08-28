@@ -1,5 +1,5 @@
 [package]
-name = "metacore"
+name = "zetacore"
 version = "0.1.0"
 authors = ["zenithvrx"]
 edition = "2021"
@@ -14,7 +14,7 @@ exclude = [
 ]
 
 [lib]
-name = "metacore"
+name = "zetacore"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

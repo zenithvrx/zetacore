@@ -1,4 +1,4 @@
-use metacore::Record;
+use zetacore::Record;
 use rand::Rng;
 
 pub fn create_random_record(dimension: usize) -> Record {

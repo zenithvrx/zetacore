@@ -1,7 +1,7 @@
 mod common;
 use common::create_random_record;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use metacore::{Record, VectorStore};
+use zetacore::{Record, VectorStore};
 
 fn benchmark_add(c: &mut Criterion) {
     let mut group = c.benchmark_group("add");

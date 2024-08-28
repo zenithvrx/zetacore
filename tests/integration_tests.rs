@@ -1,4 +1,4 @@
-use metacore::{Record, VectorStore};
+use zetacore::{Record, VectorStore};
 
 #[test]
 fn init_vector_store() {

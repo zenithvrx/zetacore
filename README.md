@@ -1,6 +1,6 @@
-# metacore
+# zetacore
 
-metacore is a Rust library with Python bindings for efficient vector storage and similarity search.
+zetacore is a Rust library with Python bindings for efficient vector storage and similarity search.
 
 ## Features
 
@@ -14,7 +14,7 @@ metacore is a Rust library with Python bindings for efficient vector storage and
 ### Python
 
 ```bash
-pip install metacore
+pip install zetacore
 ```
 
 ## Usage
@@ -22,9 +22,9 @@ pip install metacore
 ### Python
 
 ```python
-import metacore
+import zetacore
 
-store = metacore.VectorStore([])
+store = zetacore.VectorStore([])
 store.add([
     { "id": "vector_1", "values": [1.0, 2.0] },
     { "id": "vector_2", "values": [5.3, 3.9] },
