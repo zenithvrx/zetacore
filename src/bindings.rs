@@ -116,7 +116,7 @@ impl VectorStore {
 }
 
 #[pymodule]
-fn holocron(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn metacore(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<VectorStore>()?;
     Ok(())
 }

@@ -1,6 +1,6 @@
-# holocron
+# metacore
 
-holocron is a Rust library with Python bindings for efficient vector storage and similarity search.
+metacore is a Rust library with Python bindings for efficient vector storage and similarity search.
 
 ## Features
 
@@ -14,7 +14,7 @@ holocron is a Rust library with Python bindings for efficient vector storage and
 ### Python
 
 ```bash
-pip install holocron
+pip install metacore
 ```
 
 ## Usage
@@ -22,9 +22,9 @@ pip install holocron
 ### Python
 
 ```python
-import holocron
+import metacore
 
-store = holocron.VectorStore([])
+store = metacore.VectorStore([])
 store.add([
     { "id": "vector_1", "values": [1.0, 2.0] },
     { "id": "vector_2", "values": [5.3, 3.9] },

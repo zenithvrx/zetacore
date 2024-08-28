@@ -1,4 +1,4 @@
-use holocron::Record;
+use metacore::Record;
 use rand::Rng;
 
 pub fn create_random_record(dimension: usize) -> Record {

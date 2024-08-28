@@ -1,7 +1,7 @@
 mod common;
 use common::create_random_record;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use holocron::{Record, VectorStore};
+use metacore::{Record, VectorStore};
 
 fn benchmark_add(c: &mut Criterion) {
     let mut group = c.benchmark_group("add");

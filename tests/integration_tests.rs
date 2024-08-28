@@ -1,4 +1,4 @@
-use holocron::{Record, VectorStore};
+use metacore::{Record, VectorStore};
 
 #[test]
 fn init_vector_store() {
