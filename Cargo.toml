@@ -25,19 +25,18 @@ pyo3 = { version = "0.22", features = ["extension-module"] }
 rand = "0.8"
 criterion = "0.3"
 
-[[bench]]
-name = "query_benchmark"
-harness = false
-
-[[bench]]
-name = "add_benchmark"
-harness = false
-
-[[bench]]
-name = "get_benchmark"
-harness = false
-
-[[bench]]
-name = "delete_benchmark"
-harness = false
-
+# [[bench]]
+# name = "query_benchmark"
+# harness = false
+#
+# [[bench]]
+# name = "add_benchmark"
+# harness = false
+#
+# [[bench]]
+# name = "get_benchmark"
+# harness = false
+#
+# [[bench]]
+# name = "delete_benchmark"
+# harness = false
